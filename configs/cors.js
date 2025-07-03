@@ -7,7 +7,7 @@ const corsConfig = () => {
         'http://localhost:5173',
         'https://dragon-ecommerce-frontend.vercel.app',
       ];
-      if (!origin || allowedOrigins.indexOf(origin) !== 1) {
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by cors'));
