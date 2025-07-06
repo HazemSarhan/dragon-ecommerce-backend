@@ -29,3 +29,12 @@ model Token {
   isValid Boolean
   createdAt DateTime @default(now())
 }
+
+model Category {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  href String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
