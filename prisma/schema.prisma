@@ -35,6 +35,19 @@ model Category {
   title String
   description String
   href String
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  name String
+  price Float
+  image String
+  bestSelling Boolean @default(false)
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
