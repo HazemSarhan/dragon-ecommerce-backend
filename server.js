@@ -19,6 +19,8 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import productRoutes from './routes/product.routes.js';
+import cartRoutes from './routes/cart.routes.js';
+
 
 app.set('trust proxy', 1);
 app.use(corsConfig());
@@ -36,6 +38,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/category', categoryRoutes);
 app.use('/api/v1/product', productRoutes);
+app.use('/api/v1/cart', cartRoutes);
 
 app.use(errorHandlerMiddleware);
 app.use(notFoundMiddleware);
