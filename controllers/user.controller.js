@@ -23,9 +23,8 @@ export const updateUserInfo = async (req, res) => {
     throw new BadRequestError('Please provide at least new name or email!');
   }
 
-  // Check if the email already exists
-  const isEmailExist = await prisma.user.findUnique({
-    where: { email },
+  const isEmailExist = await prisma.user.findFirst({
+    where: { email, id: { not: userId } },
   });
   if (isEmailExist) {
     throw new BadRequestError('Email is already exists');
@@ -58,6 +57,9 @@ export const updateUserPassword = async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
+
+  checkPermission(req.user, user.id);
+
   const isPasswordCorrect = await bcrypt.compare(
     currentPassword,
     user.password
@@ -78,4 +80,72 @@ export const updateUserPassword = async (req, res) => {
   res
     .status(StatusCodes.OK)
     .json({ message: 'Password updated successfully.' });
+};
+
+export const adminGetAllUsers = async (req, res) => {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      _count: {
+        select: { orders: true },
+      },
+    },
+  });
+  res.status(StatusCodes.OK).json({ users });
+};
+
+export const adminUpdateUserInfo = async (req, res) => {
+  const { id: userId } = req.params;
+  const { name, email } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    throw new NotFoundError(`No users found with this id ${userId}`);
+  }
+
+  const isEmailExist = await prisma.user.findFirst({
+    where: {
+      email,
+      id: { not: userId },
+    },
+  });
+
+  if (isEmailExist) {
+    throw new BadRequestError('Email already in use');
+  }
+
+  const updateUser = await prisma.user.update({
+    where: { id: userId },
+    data: { name, email },
+  });
+
+  res.status(StatusCodes.OK).json({ message: 'User Information Updated' });
+};
+
+export const adminUpdateUserPassword = async (req, res) => {
+  const { id: userId } = req.params;
+  const { newPassword } = req.body;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    throw new NotFoundError(`No users found with this id ${userId}`);
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'Password has been updated successfully' });
 };

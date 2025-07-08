@@ -111,3 +111,13 @@ export const getMyOrders = async (req, res) => {
   });
   res.status(StatusCodes.OK).json({ orders });
 };
+
+export const adminGetAllOrders = async (req, res) => {
+  const orders = await prisma.order.findMany({
+    include: {
+      orderItems: { select: { product: true } },
+      user: { select: { name: true } },
+    },
+  });
+  res.status(StatusCodes.OK).json({ orders });
+};
