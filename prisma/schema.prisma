@@ -16,6 +16,7 @@ model User {
   tokens Token[]
   cart Cart[]
   orders Order[]
+  reviews Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -52,6 +53,9 @@ model Product {
   categoryId Int
   cart Cart[]
   orderItems OrderItems[]
+  numOfReviews Int @default(0)
+  averageRating Float @default(0)
+  reviews Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -90,6 +94,19 @@ model OrderItems {
   quantity Int @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  product Product @relation(fields: [productId], references: [id])
+  productId Int
+  rating Int
+  comment String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, productId])
 }
 
 enum OrderStatus {

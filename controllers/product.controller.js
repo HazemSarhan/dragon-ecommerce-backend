@@ -61,7 +61,15 @@ export const getProductById = async (req, res) => {
   const { id: productId } = req.params;
   const product = await prisma.product.findUnique({
     where: { id: parseInt(productId, 10) },
-    include: { category: { select: { title: true } } },
+    include: {
+      category: { select: { title: true } },
+      reviews: {
+        include: { user: true },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+    },
   });
   res.status(StatusCodes.OK).json({ product });
 };
@@ -146,4 +154,79 @@ export const deleteProduct = async (req, res) => {
     where: { id: parseInt(productId, 10) },
   });
   res.status(StatusCodes.OK).json({ message: 'Product has been deleted' });
+};
+
+export const filterProducts = async (req, res) => {
+  const { categories, min = 0, max = 1000000, name = '' } = req.query;
+
+  // Split comma-separated categories if present
+  const categoryList = categories
+    ?.split(',')
+    .map((c) => c.trim().toLowerCase());
+
+  const products = await prisma.product.findMany({
+    where: {
+      AND: [
+        ...(categoryList && categoryList.length > 0
+          ? [
+              {
+                category: {
+                  title: {
+                    in: categoryList,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            ]
+          : []),
+
+        {
+          price: {
+            gte: parseFloat(min),
+            lte: parseFloat(max),
+          },
+        },
+
+        {
+          name: {
+            contains: name,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    },
+    include: {
+      category: true,
+    },
+  });
+
+  res.status(StatusCodes.OK).json({ products });
+};
+
+export const searchProducts = async (req, res) => {
+  const { name = '' } = req.query;
+
+  if (!name) {
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Search term is required' });
+  }
+
+  const products = await prisma.product.findMany({
+    where: {
+      name: {
+        contains: name,
+        mode: 'insensitive',
+      },
+    },
+    take: 5,
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      price: true,
+    },
+  });
+
+  res.status(StatusCodes.OK).json({ products });
 };

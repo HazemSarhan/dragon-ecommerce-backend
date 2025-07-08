@@ -6,6 +6,8 @@ import {
   getAllProducts,
   updateProduct,
   deleteProduct,
+  filterProducts,
+  searchProducts,
 } from '../controllers/product.controller.js';
 import {
   authenticateUser,
@@ -19,6 +21,9 @@ router
   .get(getAllProducts);
 
 router.route('/bestSelling').get(getBestSellingProducts);
+
+router.route('/filter').get(filterProducts);
+router.route('/search').get(searchProducts);
 
 router
   .route('/:id')
